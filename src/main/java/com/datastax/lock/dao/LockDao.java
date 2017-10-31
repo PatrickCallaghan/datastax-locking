@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -49,6 +48,7 @@ public class LockDao {
 					return false;
 				} else {
 					//logger.info("Update Succeeded");
+					logger.debug("lock acquired for " + id);
 				}
 			}
 		} catch (WriteTimeoutException e) {
@@ -63,7 +63,7 @@ public class LockDao {
 
 		try {
 			this.session.execute(delete.bind(id));
-
+			logger.debug("lock deleted for " + id);
 		} catch (WriteTimeoutException e) {
 			logger.warn(e.getMessage());
 			return false;

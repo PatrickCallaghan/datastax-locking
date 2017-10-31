@@ -12,8 +12,9 @@ import com.datastax.demo.utils.Timer;
 import com.datastax.lock.dao.LockService;
 
 public class Main {
+	private static final long TOTAL = 10000000;
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
-	private static int NO_OF_SEQUENCES = 100000;
+	private static int NO_OF_SEQUENCES = 100;
 	private int noOfThreads;
 	private AtomicLong counter = new AtomicLong(0);
 
@@ -21,7 +22,9 @@ public class Main {
 
 		String noOfThreadsStr = PropertyHelper.getProperty("noOfThreads", "10");
 		noOfThreads = Integer.parseInt(noOfThreadsStr);
-
+		
+		NO_OF_SEQUENCES = Integer.parseInt(PropertyHelper.getProperty("noOfSeqs", "100"));
+		
 		LockService service = new LockService();
 		ExecutorService executor = Executors.newFixedThreadPool(noOfThreads);
 				
@@ -31,15 +34,22 @@ public class Main {
 		for (int i = 0; i < noOfThreads; i++) {
 			executor.execute(new Writer(service));
 		}
+		
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
-		while (counter.get()<1000000) {
+		while (counter.get()<TOTAL) {
 			if (counter.get()%10000==0){
 				logger.info("Total : " + counter.get());
 			}
 		}
 		
 		timer.end();
-		logger.info("1000000 took " + timer.getTimeTakenSeconds() + " sec (" + (1000000/timer.getTimeTakenSeconds()) + ") a sec" );
+		logger.info(TOTAL + " took " + timer.getTimeTakenSeconds() + " sec (" + (TOTAL/timer.getTimeTakenSeconds()) + ") a sec" );
+		System.exit(0);
 	}
 
 	class Writer implements Runnable {
@@ -55,7 +65,7 @@ public class Main {
 			while(true){
 
 				String issuer = "" + (new Double(Math.random() * NO_OF_SEQUENCES).intValue());
-				service.getLock(issuer);
+				service.getLock(issuer);	
 				counter.incrementAndGet();
 				service.getReleaseLock(issuer);				
 			}

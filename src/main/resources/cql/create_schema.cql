@@ -13,5 +13,5 @@ create table  if not exists lock_mem(
 ) WITH compaction= { 'class': 'MemoryOnlyStrategy' }
      AND compression = {'sstable_compression' : ''}
      AND default_time_to_live = 60
-	 AND gc_grace_seconds = 3600
+	 AND gc_grace_seconds = 300
      AND caching = {'keys':'NONE', 'rows_per_partition':'NONE'};
